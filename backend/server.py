@@ -29,7 +29,16 @@ if not os.environ.get("PLAYWRIGHT_BROWSERS_PATH") and os.path.exists("/pw-browse
 
 MONGO_URL = os.environ.get("MONGO_URL")
 DB_NAME = os.environ.get("DB_NAME")
-CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "*").split(",")
+
+# CORS:
+# - In production with Vercel preview deployments, the Origin changes frequently.
+# - If CORS_ORIGINS is '*' or unset, we allow any origin (no credentials).
+# - Optionally, you can set CORS_ORIGIN_REGEX (e.g. r"https://.*\\.vercel\\.app")
+_raw_cors_origins = os.environ.get("CORS_ORIGINS", "*")
+CORS_ORIGINS = [o.strip() for o in _raw_cors_origins.split(",") if o.strip()]
+if not CORS_ORIGINS:
+    CORS_ORIGINS = ["*"]
+CORS_ORIGIN_REGEX = os.environ.get("CORS_ORIGIN_REGEX")
 
 # -----------------------------
 # MongoDB setup
@@ -136,10 +145,14 @@ app.include_router(extensions_router, prefix="/api")
 app.include_router(search_router, prefix="/api")
 
 # CORS
+# If you allow any origin, you MUST NOT enable credentials.
+_allow_any_origin = len(CORS_ORIGINS) == 1 and CORS_ORIGINS[0] == "*"
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
-    allow_credentials=True,
+    allow_origins=CORS_ORIGINS if not _allow_any_origin else ["*"],
+    allow_origin_regex=CORS_ORIGIN_REGEX,
+    allow_credentials=False if _allow_any_origin else True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
