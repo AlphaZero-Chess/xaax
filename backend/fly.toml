@@ -1,0 +1,36 @@
+app = "virtual-chromium-backend"
+primary_region = "sjc"  # San Jose, change as needed
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DB_NAME = "easter_egg_browser"
+  CORS_ORIGINS = "*"
+  PLAYWRIGHT_BROWSERS_PATH = "/ms-playwright"
+
+[http_service]
+  internal_port = 8001
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "10s"
+  method = "GET"
+  path = "/"
+
+[[vm]]
+  memory = "1gb"  # Playwright needs memory
+  cpu_kind = "shared"
+  cpus = 1
+
+# Note: Set secrets using:
+# fly secrets set MONGO_URL="your-mongo-url"
+# fly secrets set EMERGENT_LLM_KEY="your-key"
+# fly secrets set GOOGLE_CSE_API_KEY="your-key"
+# fly secrets set GOOGLE_CSE_CX="your-cx"

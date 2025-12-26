@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: virtual-chromium-backend
+    env: docker
+    plan: starter  # Or 'standard' for more resources
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: MONGO_URL
+        sync: false  # Set manually in Render dashboard
+      - key: DB_NAME
+        value: easter_egg_browser
+      - key: CORS_ORIGINS
+        value: "*"  # Update with your Vercel frontend URL
+      - key: EMERGENT_LLM_KEY
+        sync: false  # Set manually
+      - key: GOOGLE_CSE_API_KEY
+        sync: false  # Set manually
+      - key: GOOGLE_CSE_CX
+        sync: false  # Set manually
+      - key: PLAYWRIGHT_BROWSERS_PATH
+        value: /ms-playwright
+    healthCheckPath: /
